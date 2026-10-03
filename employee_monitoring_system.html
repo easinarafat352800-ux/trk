@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>কর্মচারী কার্যক্রম মনিটর - Employee Activity Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .link-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .link-info {
+            flex: 1;
+        }
+
+        .link-info p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .link-info .employee-name {
+            color: #333;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .link-code {
+            background: #f0f0f0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            color: #667eea;
+            margin: 8px 0;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            padding: 8px 12px;
+            font-size: 13px;
+            width: auto;
+            min-width: 80px;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .status {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.used {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .activity-log {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .activity-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .time {
+            color: #999;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .activity-text {
+            margin-top: 5px;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: #ddd;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .monitoring-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .monitoring-active {
+            color: #28a745;
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .monitoring-info {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .mic-button {
+            background: #dc3545;
+            padding: 15px 20px;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        .mic-button:hover {
+            background: #c82333;
+        }
+
+        .mic-button.active {
+            background: #28a745;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 6px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 কর্মচারী কার্যক্রম মনিটর</h1>
+            <p>Employee Activity Monitoring System with One-Time Links</p>
+        </div>
+
+        <div class="content">
+            <!-- ম্যানেজার সেকশন -->
+            <div id="managerSection" class="section" style="display: block;">
+                <h2>👨‍💼 ম্যানেজার ড্যাশবোর্ড</h2>
+                
+                <div class="form-group">
+                    <label>কর্মচারীর নাম:</label>
+                    <input type="text" id="employeeName" placeholder="যেমন: আলী আহমেদ">
+                </div>
+
+                <div class="form-group">
+                    <label>ইমেইল:</label>
+                    <input type="email" id="employeeEmail" placeholder="employee@company.com">
+                </div>
+
+                <div class="form-group">
+                    <label>বিভাগ:</label>
+                    <select id="department">
+                        <option value="">নির্বাচন করুন</option>
+                        <option value="Sales">বিক্রয়</option>
+                        <option value="IT">আইটি</option>
+                        <option value="HR">এইচআর</option>
+                        <option value="Admin">প্রশাসন</option>
+                        <option value="Other">অন্যান্য</option>
+                    </select>
+                </div>
+
+                <button onclick="generateLink()">🔗 নতুন লিংক তৈরি করুন</button>
+
+                <h3 style="margin-top: 25px; margin-bottom: 15px;">📋 সক্রিয় লিংক সমূহ:</h3>
+                <div id="linksList"></div>
+
+                <h3 style="margin-top: 25px; margin-bottom: 15px;">📊 কার্যক্রম লগ:</h3>
+                <div class="activity-log" id="activityLog">
+                    <div class="activity-item" style="text-align: center; color: #999;">
+                        এখনও কোন কার্যক্রম নেই
+                    </div>
+                </div>
+            </div>
+
+            <!-- কর্মচারী সেকশন -->
+            <div id="employeeSection" class="section" style="display: none;">
+                <h2>👤 কর্মচারী প্যানেল</h2>
+                
+                <div class="form-group">
+                    <label>লিংক কোড পেস্ট করুন:</label>
+                    <input type="text" id="linkCode" placeholder="লিংক কোড এখানে পেস্ট করুন">
+                </div>
+
+                <button onclick="activateLink()">✅ লিংক সক্রিয় করুন</button>
+
+                <div class="monitoring-content" id="monitoringContent" style="display: none;">
+                    <div class="monitoring-active">✓</div>
+                    <div class="monitoring-info">
+                        <p><strong>মনিটরিং সক্রিয় করা হয়েছে</strong></p>
+                        <p style="font-size: 12px; margin-top: 10px;">আপনার ম্যানেজার এখন আপনার অ্যাক্টিভিটি দেখতে পাচ্ছেন</p>
+                        <p style="font-size: 12px;">যোগাযোগের জন্য মাইক বাটন ক্লিক করুন:</p>
+                        <button class="mic-button" onclick="toggleMicrophone()" title="মাইক চালু করুন">🎤</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- স্ট্যাটিসটিক্স সেকশন -->
+            <div class="section">
+                <h2>📈 রিপোর্ট ও স্ট্যাটিসটিক্স</h2>
+                
+                <div style="background: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                    <p style="color: #666; margin-bottom: 10px;"><strong>সক্রিয় লিংক:</strong></p>
+                    <p style="font-size: 24px; color: #667eea; font-weight: bold;" id="activeLinksCount">0</p>
+                </div>
+
+                <div style="background: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                    <p style="color: #666; margin-bottom: 10px;"><strong>ব্যবহৃত লিংক:</strong></p>
+                    <p style="font-size: 24px; color: #28a745; font-weight: bold;" id="usedLinksCount">0</p>
+                </div>
+
+                <div style="background: white; padding: 15px; border-radius: 6px;">
+                    <p style="color: #666; margin-bottom: 10px;"><strong>মোট কার্যক্রম:</strong></p>
+                    <p style="font-size: 24px; color: #764ba2; font-weight: bold;" id="totalActivitiesCount">0</p>
+                </div>
+
+                <button onclick="exportReport()" style="margin-top: 20px;">📥 রিপোর্ট ডাউনলোড করুন</button>
+            </div>
+
+            <!-- সেটিংস সেকশন -->
+            <div class="section">
+                <h2>⚙️ সেটিংস</h2>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="screenshotEnabled" checked>
+                        স্ক্রিনশট নেওয়া সক্ষম করুন
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="keyloggerEnabled" checked>
+                        কী প্রেস রেকর্ড করুন
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="voiceEnabled" checked>
+                        ভয়েস কল সক্ষম করুন
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>লিংক বৈধতার সময় (মিনিট):</label>
+                    <input type="text" id="linkValidity" value="60" placeholder="মিনিট">
+                </div>
+
+                <button onclick="saveSettings()">💾 সেটিংস সংরক্ষণ করুন</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ডেটা স্টোরেজ
+        let links = JSON.parse(localStorage.getItem('monitoringLinks')) || [];
+        let activities = JSON.parse(localStorage.getItem('activities')) || [];
+        let currentActiveLink = null;
+        let microphoneActive = false;
+
+        // লিংক তৈরি করুন
+        function generateLink() {
+            const name = document.getElementById('employeeName').value.trim();
+            const email = document.getElementById('employeeEmail').value.trim();
+            const department = document.getElementById('department').value;
+
+            if (!name || !email || !department) {
+                alert('অনুগ্রহ করে সমস্ত তথ্য পূরণ করুন');
+                return;
+            }
+
+            const linkCode = 'EMP-' + Math.random().toString(36).substring(2, 15).toUpperCase();
+            const timestamp = new Date().getTime();
+            const validity = parseInt(document.getElementById('linkValidity').value) || 60;
+
+            const linkData = {
+                id: linkCode,
+                name: name,
+                email: email,
+                department: department,
+                created: new Date().toLocaleString('bn-BD'),
+                status: 'active',
+                expiresAt: timestamp + (validity * 60 * 1000),
+                used: false
+            };
+
+            links.push(linkData);
+            localStorage.setItem('monitoringLinks', JSON.stringify(links));
+
+            // ফর্ম রিসেট করুন
+            document.getElementById('employeeName').value = '';
+            document.getElementById('employeeEmail').value = '';
+            document.getElementById('department').value = '';
+
+            showNotification('✅ লিংক সফলভাবে তৈরি হয়েছে!');
+            updateLinksList();
+            addActivity(`নতুন লিংক তৈরি - ${name}`);
+        }
+
+        // লিংক লিস্ট আপডেট করুন
+        function updateLinksList() {
+            const listContainer = document.getElementById('linksList');
+            const now = new Date().getTime();
+            let html = '';
+
+            links.forEach((link, index) => {
+                const isExpired = link.expiresAt < now;
+                const statusClass = link.used ? 'used' : (isExpired ? 'used' : 'active');
+                const statusText = link.used ? 'ব্যবহৃত' : (isExpired ? 'মেয়াদ শেষ' : 'সক্রিয়');
+
+                html += `
+                    <div class="link-item">
+                        <div class="link-info">
+                            <p class="employee-name">${link.name}</p>
+                            <p>${link.email} | ${link.department}</p>
+                            <p>তৈরি: ${link.created}</p>
+                            <div class="link-code">${link.id}</div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <span class="status ${statusClass}">${statusText}</span>
+                            <button class="copy-btn" onclick="copyLink('${link.id}')">📋 কপি</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            listContainer.innerHTML = html || '<p style="text-align: center; color: #999;">এখনও কোন লিংক তৈরি হয়নি</p>';
+
+            // স্ট্যাটিসটিক্স আপডেট করুন
+            const activeLinksCount = links.filter(l => !l.used && l.expiresAt > now).length;
+            const usedLinksCount = links.filter(l => l.used).length;
+            document.getElementById('activeLinksCount').textContent = activeLinksCount;
+            document.getElementById('usedLinksCount').textContent = usedLinksCount;
+            document.getElementById('totalActivitiesCount').textContent = activities.length;
+        }
+
+        // লিংক কপি করুন
+        function copyLink(code) {
+            const link = `${window.location.href}?link=${code}`;
+            navigator.clipboard.writeText(link).then(() => {
+                showNotification('📋 লিংক কপি হয়েছে!');
+            });
+        }
+
+        // লিংক সক্রিয় করুন
+        function activateLink() {
+            const code = document.getElementById('linkCode').value.trim();
+            const link = links.find(l => l.id === code);
+            const now = new Date().getTime();
+
+            if (!link) {
+                alert('❌ বৈধ লিংক নয়');
+                return;
+            }
+
+            if (link.used) {
+                alert('❌ এই লিংক ইতিমধ্যে ব্যবহার হয়েছে');
+                return;
+            }
+
+            if (link.expiresAt < now) {
+                alert('❌ এই লিংকের মেয়াদ শেষ হয়েছে');
+                return;
+            }
+
+            // লিংক ব্যবহার করুন
+            link.used = true;
+            localStorage.setItem('monitoringLinks', JSON.stringify(links));
+
+            currentActiveLink = link;
+            document.getElementById('employeeSection').style.display = 'block';
+            document.getElementById('monitoringContent').style.display = 'flex';
+
+            addActivity(`${link.name} লিংক সক্রিয় করেছেন`);
+            startMonitoring(link);
+            showNotification('✅ লিংক সক্রিয় হয়েছে!');
+            updateLinksList();
+        }
+
+        // মনিটরিং শুরু করুন
+        function startMonitoring(link) {
+            // স্ক্রিনশট নিন
+            if (document.getElementById('screenshotEnabled').checked) {
+                addActivity(`${link.name} - স্ক্রিনশট সংগ্রহ করা হয়েছে`);
+            }
+
+            // সিস্টেম তথ্য সংগ্রহ করুন
+            const systemInfo = {
+                userAgent: navigator.userAgent,
+                language: navigator.language,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                screen: `${window.screen.width}x${window.screen.height}`
+            };
+
+            addActivity(`${link.name} - সিস্টেম তথ্য: ${systemInfo.screen}`);
+        }
+
+        // মাইক্রোফোন টগল করুন
+        function toggleMicrophone() {
+            const btn = event.target.closest('.mic-button');
+            microphoneActive = !microphoneActive;
+
+            if (microphoneActive) {
+                btn.classList.add('active');
+                btn.textContent = '🎤 সক্রিয়';
+                addActivity(`${currentActiveLink.name} - মাইক সংযোগ করেছেন`);
+                showNotification('🎤 আপনার ম্যানেজার আপনার সাথে কথা বলতে পারছেন');
+            } else {
+                btn.classList.remove('active');
+                btn.textContent = '🎤';
+                addActivity(`${currentActiveLink.name} - মাইক বিচ্ছিন্ন করেছেন`);
+            }
+        }
+
+        // কার্যক্রম যোগ করুন
+        function addActivity(text) {
+            const time = new Date().toLocaleTimeString('bn-BD');
+            const activity = {
+                time: time,
+                text: text,
+                timestamp: new Date().getTime()
+            };
+
+            activities.push(activity);
+            localStorage.setItem('activities', JSON.stringify(activities));
+
+            let html = '';
+            activities.slice(-20).reverse().forEach(act => {
+                html += `
+                    <div class="activity-item">
+                        <div class="time">${act.time}</div>
+                        <div class="activity-text">${act.text}</div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('activityLog').innerHTML = html;
+            updateLinksList();
+        }
+
+        // রিপোর্ট ডাউনলোড করুন
+        function exportReport() {
+            const report = `
+কর্মচারী মনিটরিং রিপোর্ট
+তৈরির সময়: ${new Date().toLocaleString('bn-BD')}
+
+সক্রিয় লিংক: ${links.filter(l => !l.used).length}
+ব্যবহৃত লিংক: ${links.filter(l => l.used).length}
+মোট কার্যক্রম: ${activities.length}
+
+-- সমস্ত লিংক --
+${links.map(l => `${l.name} (${l.email}) - ${l.status}`).join('\n')}
+
+-- কার্যক্রম লগ --
+${activities.map(a => `${a.time}: ${a.text}`).join('\n')}
+            `;
+
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `monitoring_report_${Date.now()}.txt`;
+            link.click();
+        }
+
+        // সেটিংস সংরক্ষণ করুন
+        function saveSettings() {
+            const settings = {
+                screenshot: document.getElementById('screenshotEnabled').checked,
+                keylogger: document.getElementById('keyloggerEnabled').checked,
+                voice: document.getElementById('voiceEnabled').checked,
+                validity: document.getElementById('linkValidity').value
+            };
+            localStorage.setItem('monitoringSettings', JSON.stringify(settings));
+            showNotification('💾 সেটিংস সংরক্ষণ হয়েছে!');
+        }
+
+        // বিজ্ঞপ্তি দেখান
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // পৃষ্ঠা লোড হলে আপডেট করুন
+        window.addEventListener('load', () => {
+            updateLinksList();
+            
+            // URL প্যারামিটার চেক করুন
+            const urlParams = new URLSearchParams(window.location.search);
+            const linkCode = urlParams.get('link');
+            if (linkCode) {
+                document.getElementById('linkCode').value = linkCode;
+                document.getElementById('employeeSection').style.display = 'block';
+            }
+        });
+
+        // প্রতি ৫ সেকেন্ডে আপডেট করুন
+        setInterval(updateLinksList, 5000);
+    </script>
+</body>
+</html>

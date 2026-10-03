@@ -1,0 +1,102 @@
+# Employee Monitoring System - Docker Compose
+# একটি কমান্ডে সম্পূর্ণ সিস্টেম চালু করুন
+
+version: '3.8'
+
+services:
+  # MongoDB ডাটাবেস
+  mongodb:
+    image: mongo:latest
+    container_name: monitoring-db
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      # MongoDB রুট পাসওয়ার্ড (পরিবর্তন করুন!)
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: changeThis123!
+      MONGO_INITDB_DATABASE: employee_monitoring
+    volumes:
+      # ডেটা পার্সিস্টেন্স
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - monitoring-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Node.js অ্যাপ্লিকেশন
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: monitoring-app
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      # নোড পরিবেশ
+      NODE_ENV: production
+      PORT: 5000
+
+      # MongoDB সংযোগ
+      MONGODB_URI: mongodb://admin:changeThis123!@mongodb:27017/employee_monitoring?authSource=admin
+
+      # JWT সিক্রেট (উৎপাদনের জন্য পরিবর্তন করুন!)
+      JWT_SECRET: your_super_secret_key_change_this_in_production_please_make_it_very_long_and_complex_1234567890
+
+      # ফ্রন্টেন্ড URL
+      FRONTEND_URL: http://localhost:3000
+
+      # লগিং
+      LOG_LEVEL: info
+      LOG_FILE: logs/server.log
+
+      # কাস্টম সেটিংস
+      DEFAULT_LINK_VALIDITY: 60
+      MAX_ACTIVITY_LOG_DAYS: 30
+      MAX_VOICE_RECORDING_DAYS: 90
+
+    volumes:
+      # লগ ফাইল পার্সিস্টেন্স
+      - ./logs:/app/logs
+    networks:
+      - monitoring-network
+    healthcheck:
+      test: curl -f http://localhost:5000/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx রিভার্স প্রক্সি (বৈকল্পিক)
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: monitoring-proxy
+  #   restart: always
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./certs:/etc/nginx/certs:ro
+  #   depends_on:
+  #     - app
+  #   networks:
+  #     - monitoring-network
+
+volumes:
+  # MongoDB ডেটা ভলিউম
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+
+networks:
+  monitoring-network:
+    driver: bridge
