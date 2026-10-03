@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: employee-monitoring-system
+    runtime: node
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true

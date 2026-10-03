@@ -1,44 +1,20 @@
-# Employee Monitoring System - Docker Image
-
-FROM node:18-alpine
-
-# কর্মজীবী ডিরেক্টরি সেট করুন
+FROM node:20-alpine
 WORKDIR /app
 
-# পোর্ট এক্সপোজ করুন
+ENV NODE_ENV=production
+ENV PORT=5000
+
+COPY package*.json ./
+RUN npm install --omit=dev && npm cache clean --force
+
+COPY . .
+
+RUN mkdir -p /app/data /app/logs &&     addgroup -S appgroup && adduser -S appuser -G appgroup &&     chown -R appuser:appgroup /app
+
+USER appuser
+
 EXPOSE 5000
 
-# হেলথ চেক যোগ করুন
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:5000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3   CMD node -e "require('http').get('http://127.0.0.1:'+(process.env.PORT||5000)+'/health', r => process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
 
-# প্যাকেজ ইনস্টল করুন
-RUN apk add --no-cache \
-    curl \
-    wget \
-    bash
-
-# ডিপেন্ডেন্সি ফাইল কপি করুন
-COPY package*.json ./
-
-# npm ডিপেন্ডেন্সি ইনস্টল করুন
-RUN npm ci --only=production
-
-# অ্যাপ্লিকেশন কপি করুন
-COPY server.js ./
-
-# লগ ডিরেক্টরি তৈরি করুন
-RUN mkdir -p logs
-
-# অ-রুট ব্যবহারকারী তৈরি করুন
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
-
-# মালিকানা পরিবর্তন করুন
-RUN chown -R nodejs:nodejs /app
-
-# nodejs ব্যবহারকারীতে স্যুইচ করুন
-USER nodejs
-
-# সার্ভার চালু করুন
-CMD ["node", "server.js"]
+CMD ["npm","start"]

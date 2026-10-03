@@ -465,7 +465,7 @@
         // =====================================================
         // কনফিগারেশন
         // =====================================================
-        const API_URL = 'http://localhost:5000';
+        const API_URL = window.location.origin;
         let socket = null;
         let manager = null;
         let token = null;
@@ -638,7 +638,7 @@
         }
 
         function connectWebSocket() {
-            socket = io(API_URL, {
+            socket = io({
                 reconnection: true,
                 reconnectionDelay: 1000,
                 reconnectionDelayMax: 5000,

@@ -1,7 +1,7 @@
 {
   "name": "employee-monitoring-system",
-  "version": "1.0.0",
-  "description": "Employee Activity Monitoring System with local on-device JSON database",
+  "version": "1.1.0",
+  "description": "Employee Activity Monitoring System - Render/GitHub deployment-ready Node.js app",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -28,5 +28,8 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.20"
+  },
+  "engines": {
+    "node": ">=18 <23"
   }
 }
